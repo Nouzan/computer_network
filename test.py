@@ -1,43 +1,43 @@
-import os, time, fcntl
+import multiprocessing
+import time
+import os
 
-PIDS = []
-R, W = os.pipe()
+PS = []
+# R, W = os.pipe()
 # fcntl.fcntl(R, fcntl.F_SETFL, os.O_NONBLOCK)
 
 
-def child():
+def child(pipe):
     count = 0
     while True:
         # os.close(W)
-        # time.sleep(1)
-        line = os.read(R, 64)
+        time.sleep(1)
+        msg = pipe.recv()
         # print(int(line))
-        if int(line) == os.getpid() or count >= 50:
+        if int(msg) == os.getpid() or count >= 50:
             print('STOP %s' % os.getpid())
             break
         count += 1
         print("[%s, %s, count=%s]" % (os.getpid(), os.getppid(), count))
 
 
-def parent():
-    w = os.fdopen(W, 'w')
-    print(PIDS, os.getpid())
-    for pid in PIDS:
-        print("killing %s" % pid)
-        w.write(str(pid))
-        w.flush()
+def parent(pipes):
+    # print(PIDS, os.getpid())
+    for i in range(len(PS)):
+        print("killing %s" % PS[i].pid)
+        time.sleep(4)
+        pipes[i].send(str(PS[i].pid))
+        # w.flush()
 
+pipes = []
 
-pid = None
-count = 2
+for i in range(4):
+    pipe = multiprocessing.Pipe()
+    p = multiprocessing.Process(target=child, args=(pipe[0],))
+    pipes.append(pipe[1])
+    PS.append(p)
+    # pipe[0].close()
+    p.start()
 
-while pid != 0 and count > 0:
-    pid = os.fork()
-    PIDS.append(pid)
-    count -= 1
-
-if pid == 0:
-    child()
-else:
-    parent()
-    os.wait()
+parent(pipes)
+os.wait()
