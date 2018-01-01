@@ -50,7 +50,7 @@ if __name__ == '__main__':
     for p in pipe1s:
         cs.append(p.recv())
 
-    msgs = [0] * len(cs[0])
+    msgs = [0] * len(cs[0].split())
 
     for c in cs:
         cc = c.split(' ')
