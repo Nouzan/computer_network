@@ -60,6 +60,6 @@ if __name__ == '__main__':
     for i in range(len(msgs)):
         msgs[i] = str(msgs[i])
 
+    print('[parent]sending:', ' '.join(msgs))
     for p in pipe2s:
-        print('[parent]sending:', ' '.join(msgs))
         p.send(' '.join(msgs))
